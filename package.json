@@ -1,6 +1,6 @@
 {
   "name": "iobroker.scc",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "PV-Überschuss-Steuerung: Batterien priorisieren, dann Geräte schalten, Rest ins Netz",
   "author": "ioBroker",
   "license": "MIT",
