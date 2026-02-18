@@ -2,6 +2,9 @@
 
 **Deutsch** | [English](README.en.md)
 
+[![Downloads](https://img.shields.io/npm/dm/iobroker.scc.svg)](https://www.npmjs.com/package/iobroker.scc)
+[![Installed](https://iobroker.live/badges/scc-installed.svg)](https://iobroker.live/badges/scc-installed)
+
 **SCC** steht für **Self-Consumption Charging**: Eigenverbrauch steuern – zuerst Batterien laden, dann Geräte mit PV-Überschuss schalten, Rest ins Netz.
 
 **Hinweis:** Dieser Adapter befindet sich in **Entwicklung**. Es wird **keine Haftung** für die Funktionsfähigkeit, Schäden oder Folgen der Nutzung übernommen. Nutzung auf eigenes Risiko.

@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ioBroker/ioBroker.scc"
+    "url": "git+https://github.com/znyde87/iobroker.scc.git"
   },
   "engines": {
     "node": ">=18"
