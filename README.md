@@ -3,7 +3,6 @@
 **SCC** steht für **Self-Consumption Charging**: Eigenverbrauch steuern – zuerst Batterien laden, dann Geräte mit PV-Überschuss schalten, Rest ins Netz.
 
 
-[![Downloads](https://img.shields.io/npm/dm/iobroker.scc.svg)](https://www.npmjs.com/package/iobroker.scc)
 
 ## Beschreibung
 
