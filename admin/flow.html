@@ -201,7 +201,7 @@
                         <li><strong>Soll:</strong> Dein Zielwert – z. B. „möchte 100 W nutzen“ oder „50 °C Speicher“.</li>
                         <li><strong>Fehler (Soll − Ist):</strong> Wie weit weg du vom Ziel bist. Ist = 0, Soll = 100 → Fehler = 100. Der Regler will diesen Fehler kleiner machen.</li>
                         <li><strong>P-Anteil:</strong> Reagiert sofort auf den Fehler. Bei großem Xp bleibt P bewusst klein (z. B. 0,5), damit der Ausgang nicht sofort extrem ausschlägt.</li>
-                        <li><strong>I-Anteil:</strong> Summiert den Fehler über die Zeit. War lange „zu wenig“ (Ist &lt; Soll), wird I groß – dann dreht der Regler kräftig auf. Bei deinem Beispiel: I ≈ 90 → treibt den Ausgang hoch.</li>
+                        <li><strong>I-Anteil:</strong> Summiert den Fehler über die Zeit. War lange „zu wenig“ (Ist &lt; Soll), wird I groß – dann dreht der Regler kräftig auf.</li>
                         <li><strong>Ausgang (%):</strong> Ergebnis = P + I (auf 0–100 % begrenzt). <strong>Wichtig bei Überschuss-Eingang:</strong> Der Ausgang wird zusätzlich auf den verfügbaren Überschuss begrenzt – bei 0 W Überschuss bleibt der Ausgang 0 %, bei 50 W Überschuss (Soll 100 W) maximal 50 %. So zieht der Heizstab nie mehr, als da ist.</li>
                     </ul>
                     <p class="scc-pid-sim-howto-summary">Kurz: <em>Ist unter Soll → Fehler positiv → Ausgang wird größer</em>. Ist über Soll → Fehler negativ → Ausgang wird kleiner. Bei Überschuss-Eingang gilt immer: Ausgang ≤ (Ist / Soll)·100 %, damit nie mehr genutzt wird als vorhanden.</p>
