@@ -10,6 +10,39 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+## [0.3.5] – 2026-02-22
+
+### Added / Hinzugefügt
+
+- **EN:** Configurable **Admin port** (Socket fallback) in adapter settings: when the Flow page is opened outside the admin (e.g. bookmark, VIS), the socket can connect to this port; 0 disables fallback. Hint text in config.  
+  **DE:** Einstellbarer **Admin-Port** (Socket-Fallback) in den Adapter-Einstellungen; 0 = kein Fallback. Hinweistext in der Konfiguration.
+- **EN:** Standalone server exposes **GET /api/config** (returns `adminPort`) so the Flow page uses the configured port for socket fallback.  
+  **DE:** Standalone-Server liefert **GET /api/config** (adminPort) für den Socket-Fallback.
+
+### Fixed / Behoben
+
+- **EN:** **Standalone port** was not read from config (missing in normalized `this.config`); Flow page now starts correctly on the configured port.  
+  **DE:** **Standalone-Port** wurde nicht aus der Konfiguration gelesen; Flow-Seite läuft nun unter dem konfigurierten Port.
+- **EN:** **Battery SoC** and **PV forecast** now work with foreign states: use `getForeignStateAsync` / `getForeignObjectAsync` so states from other adapters (e.g. Modbus, DWD) are read correctly.  
+  **DE:** **Batterie-SoC** und **PV-Vorhersage** nutzen jetzt `getForeignStateAsync` für fremde States (z. B. Modbus, DWD).
+- **EN:** SoC available earlier: second delayed read (10 s), and in each tick missing SoC is refilled once from the state.  
+  **DE:** SoC früher verfügbar: zweiter verzögerter Lauf (10 s) und im Tick Nachladen fehlender SoC-Werte.
+- **EN:** **lastFilledIdx** for battery display: use `Math.floor(socPercent/20)-1` so the correct topmost filled segment pulses (e.g. 49% → segment 1).  
+  **DE:** Oberstes gefülltes Segment pulsiert korrekt (z. B. bei 49%).
+
+### Changed / Geändert
+
+- **EN:** **Repository checker (Issue #9):** io-package.json `licenseInformation` with `type`, `license`, `link`; `native.adminPort`; package.json keywords include `ioBroker`; admin jsonConfig size attributes (xs, md, lg, xl) for tab_general items; README License section with Copyright (c) 2026 ioBroker and current version 0.3.5.  
+  **DE:** Repository-Checker: licenseInformation, adminPort, Keywords, jsonConfig-Größen, README Copyright/Version.
+- **EN:** **Standalone Flow page:** If `/api/flowData` is available, the page runs in standalone mode (no socket.io load, no 404s); data only via fetch. Admin port for fallback is read from `/api/config`.  
+  **DE:** Flow-Seite im Standalone: Bei `/api/flowData` kein Socket.io-Load; Fallback-Port aus `/api/config`.
+- **EN:** **Battery display:** Only the topmost filled segment pulses (charging/discharging); stronger green (#00c853); exact transform matrix for user-defined quad; grey background and border of outline removed.  
+  **DE:** Batterie-Anzeige: Nur oberstes Segment pulsiert; kräftigeres Grün; Matrix-Transform für Viereck; grauer Hintergrund und Rand entfernt.
+- **EN:** **Health check:** No longer logs warnings (still runs and writes to `info.health`).  
+  **DE:** Health-Check schreibt keine Warnungen mehr ins Log.
+
+---
+
 ## [0.3.4] – 2026-02-20
 
 ### Fixed / Behoben

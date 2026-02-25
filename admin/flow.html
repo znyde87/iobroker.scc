@@ -228,6 +228,25 @@
             };
         };
         (function () {
+            function startWithoutSocket() {
+                window.__sccStandalone = true;
+                sccLog('Standalone-Modus: /api/flowData verf\u00fcgbar, kein Socket n\u00f6tig');
+                if (window.__sccFlowStart) window.__sccFlowStart();
+            }
+            fetch('/api/flowData', { credentials: 'same-origin' }).then(function (r) {
+                if (r.ok) return r.json();
+                throw new Error();
+            }).then(function (data) {
+                if (data && data.surplus != null) {
+                    startWithoutSocket();
+                    return true;
+                }
+                throw new Error();
+            }).catch(function () {
+                loadSocketAndConnect();
+            });
+
+            function loadSocketAndConnect() {
             var pathname = window.location.pathname || '';
             var base = pathname.replace(/\/[^/]*$/, '');
             var urls = [
@@ -273,14 +292,32 @@
                         if (!done) { sccLog('Timeout (8s)', url); done = true; s.close(); if (onFail) onFail(); }
                     }, 8000);
                 }
-                try {
-                    tryConnect(protocol + '//' + host + ':' + currentPort, function () {
-                        sccLog('Fallback auf Port 8084');
+                function tryFallbackPort() {
+                    fetch('/api/config', { credentials: 'same-origin' }).then(function (r) {
+                        if (r.ok) return r.json();
+                        throw new Error();
+                    }).then(function (c) {
+                        var port = (c && typeof c.adminPort === 'number') ? c.adminPort : 8084;
+                        if (port <= 0) {
+                            sccLog('Admin-Port 0, kein Socket-Fallback');
+                            if (window.__sccFlowStart) window.__sccFlowStart();
+                            return;
+                        }
+                        sccLog('Fallback auf Port ' + port);
+                        tryConnect(protocol + '//' + host + ':' + port, function () {
+                            sccLog('keine Socket-Verbindung, starte trotzdem');
+                            if (window.__sccFlowStart) window.__sccFlowStart();
+                        });
+                    }).catch(function () {
+                        sccLog('Fallback auf Port 8084 (api/config nicht verf\u00fcgbar)');
                         tryConnect(protocol + '//' + host + ':8084', function () {
                             sccLog('keine Socket-Verbindung, starte trotzdem');
                             if (window.__sccFlowStart) window.__sccFlowStart();
                         });
                     });
+                }
+                try {
+                    tryConnect(protocol + '//' + host + ':' + currentPort, tryFallbackPort);
                 } catch (e) {
                     sccLog('tryConnect Exception', e);
                     if (window.__sccFlowStart) window.__sccFlowStart();
@@ -311,6 +348,7 @@
                 document.head.appendChild(script);
             }
             tryNext();
+            }
         })();
     </script>
     <script>
@@ -500,8 +538,9 @@
             }
 
             var fetchTried = false;
-            function loadFlowDataViaFetch(cb) {
-                if (fetchTried) return cb(null);
+            function loadFlowDataViaFetch(cb, allowRetry) {
+                if (fetchTried && !allowRetry) return cb(null);
+                if (allowRetry) fetchTried = false;
                 fetchTried = true;
                 sccLog('loadFlowDataViaFetch');
                 var id = encodeURIComponent(instanceId + '.flowData');
@@ -509,6 +548,8 @@
                     './getState?id=' + id,
                     '../getState?id=' + id,
                     '/api/v1/state/' + instanceId + '.flowData',
+                    '/api/state/' + instanceId + '.flowData',
+                    '/state/' + instanceId + '.flowData',
                     '/getState?ids=' + id
                 ];
                 var i = 0;
@@ -529,53 +570,62 @@
                 next();
             }
 
-            function loadFlowData(cb) {
+            function loadFlowData(cb, isRetry) {
                 var done = false;
+                if (isRetry) fetchTried = false;
                 function finish(data) {
                     if (done) return;
                     done = true;
                     sccLog('loadFlowData finish', data ? 'Daten' : 'keine Daten');
                     cb(data);
                 }
-                fetch('/api/flowData', { credentials: 'same-origin' }).then(function (r) {
-                    if (!r.ok) throw new Error();
-                    return r.json();
-                }).then(function (data) {
-                    if (data && data.surplus) {
-                        window.__sccStandalone = true;
-                        return finish(data);
-                    }
-                    throw new Error('no surplus');
-                }).catch(function () {
-                    if (done) return;
+                if (window.__sccStandalone) {
+                    fetch('/api/flowData', { credentials: 'same-origin' }).then(function (r) {
+                        if (!r.ok) throw new Error();
+                        return r.json();
+                    }).then(function (data) {
+                        if (data && data.surplus) finish(data);
+                        else finish(null);
+                    }).catch(function () { finish(null); });
+                    return;
+                }
+                function trySendToThenFetch() {
                     if (typeof sendToFn === 'function') {
-                    sccLog('loadFlowData: sendTo(getFlowData)');
-                    var t = setTimeout(function () {
-                        loadFlowDataViaStates(function (d) {
-                            if (d) return finish(d);
-                            loadFlowDataViaFetch(finish);
+                        sccLog('loadFlowData: sendTo(getFlowData)');
+                        var t = setTimeout(function () {
+                            if (done) return;
+                            loadFlowDataViaFetch(finish, true);
+                        }, 3000);
+                        sendToFn(instanceId, 'getFlowData', {}, function (err, data) {
+                            clearTimeout(t);
+                            sccLog('sendTo getFlowData Antwort', err ? 'err' : 'ok', data && data.surplus ? 'surplus' : '');
+                            if (!done && (err || !data || !data.surplus)) loadFlowDataViaFetch(finish, true);
+                            else if (!done && data && data.surplus) finish(data);
                         });
-                    }, 2500);
-                    sendToFn(instanceId, 'getFlowData', {}, function (err, data) {
-                        clearTimeout(t);
-                        sccLog('sendTo getFlowData Antwort', err ? 'err' : 'ok', data && data.surplus ? 'surplus' : '');
-                        if (err || !data || !data.surplus) {
-                            loadFlowDataViaStates(function (d) {
-                                if (d) return finish(d);
-                                loadFlowDataViaFetch(finish);
-                            });
-                        } else {
+                    } else {
+                        sccLog('loadFlowData: kein sendTo, nutze Fetch');
+                        loadFlowDataViaFetch(finish, true);
+                    }
+                }
+                loadFlowDataViaFlowDataState(function (data) {
+                    if (data) return finish(data);
+                    loadFlowDataViaStates(function (d) {
+                        if (d) return finish(d);
+                        trySendToThenFetch();
+                    });
+                });
+                setTimeout(function () {
+                    if (done) return;
+                    fetch('/api/flowData', { credentials: 'same-origin' }).then(function (r) {
+                        if (!r.ok) throw new Error();
+                        return r.json();
+                    }).then(function (data) {
+                        if (data && data.surplus) {
+                            window.__sccStandalone = true;
                             finish(data);
                         }
-                    });
-                    } else {
-                        sccLog('loadFlowData: kein sendTo, nutze States/Fetch');
-                        loadFlowDataViaStates(function (d) {
-                            if (d) return finish(d);
-                            loadFlowDataViaFetch(finish);
-                        });
-                    }
-                });
+                    }).catch(function () {});
+                }, 0);
             }
 
             function formatkW(val) {
@@ -671,7 +721,7 @@
                         '  <img class="scc-house-img" src="' + houseImgUrl + '" alt=""/>' +
                         '  <svg class="scc-house-svg" viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
                         '    <defs>' +
-                        '      <linearGradient id="scc-green-flow" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#2e9d4a"/><stop offset="35%" stop-color="#5aff78"/><stop offset="65%" stop-color="#5aff78"/><stop offset="100%" stop-color="#2e9d4a"/></linearGradient>' +
+                        '      <linearGradient id="scc-green-flow" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#00c853"/><stop offset="35%" stop-color="#69f0ae"/><stop offset="65%" stop-color="#69f0ae"/><stop offset="100%" stop-color="#00c853"/></linearGradient>' +
                         '      <linearGradient id="scc-red-flow" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#b71c1c"/><stop offset="35%" stop-color="#ff6b6b"/><stop offset="65%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#b71c1c"/></linearGradient>' +
                         '      <linearGradient id="scc-mixed-flow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#5aff78"/><stop offset="50%" stop-color="#5aff78"/><stop offset="50%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#ff6b6b"/></linearGradient>' +
                         '      <filter id="scc-flow-glow" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">' +
@@ -694,6 +744,14 @@
                         '      <path data-scc="flow-house" fill="none" pathLength="100" />' +
                         '      <path data-scc="flow-grid" fill="none" pathLength="100" />' +
                         '      <path data-scc="flow-battery" fill="none" pathLength="100" />' +
+                        '    </g>' +
+                        '    <g class="scc-house-battery-display" transform="matrix(1.1875,-0.3542,0,0.9872,640.25,912.55)">' +
+                        '      <rect class="scc-battery-outline" x="0" y="0" width="56" height="92" rx="10" ry="10" fill="none" stroke="none"/>' +
+                        '      <rect data-scc="bat-seg-0" class="scc-battery-seg" x="4" y="74" width="48" height="14" rx="5" ry="5"/>' +
+                        '      <rect data-scc="bat-seg-1" class="scc-battery-seg" x="4" y="58" width="48" height="14" rx="5" ry="5"/>' +
+                        '      <rect data-scc="bat-seg-2" class="scc-battery-seg" x="4" y="42" width="48" height="14" rx="5" ry="5"/>' +
+                        '      <rect data-scc="bat-seg-3" class="scc-battery-seg" x="4" y="26" width="48" height="14" rx="5" ry="5"/>' +
+                        '      <rect data-scc="bat-seg-4" class="scc-battery-seg" x="4" y="10" width="48" height="14" rx="5" ry="5"/>' +
                         '    </g>' +
                         '    <g class="scc-house-labels">' +
                         '      <g class="scc-house-label-block scc-house-label-top" transform="translate(521, 200)"><text data-scc="val-pv" class="scc-house-value" y="0" text-anchor="middle">–</text><text class="scc-house-label" y="50" text-anchor="middle">Photovoltaik</text></g>' +
@@ -719,7 +777,12 @@
                         valBattery: container.querySelector('[data-scc="val-battery"]'),
                         labBattery: container.querySelector('[data-scc="lab-battery"]'),
                         valGrid: container.querySelector('[data-scc="val-grid"]'),
-                        subGrid: container.querySelector('[data-scc="sub-grid"]')
+                        subGrid: container.querySelector('[data-scc="sub-grid"]'),
+                        batSeg0: container.querySelector('[data-scc="bat-seg-0"]'),
+                        batSeg1: container.querySelector('[data-scc="bat-seg-1"]'),
+                        batSeg2: container.querySelector('[data-scc="bat-seg-2"]'),
+                        batSeg3: container.querySelector('[data-scc="bat-seg-3"]'),
+                        batSeg4: container.querySelector('[data-scc="bat-seg-4"]')
                     };
                 }
 
@@ -741,6 +804,23 @@
                 if (r.labBattery) { r.labBattery.textContent = 'Batterie ' + socStr + ' ' + batStatus; r.labBattery.setAttribute('class', 'scc-house-label ' + valueColorClass('battery')); }
                 if (r.valGrid) { r.valGrid.textContent = (gridConsW > 0 ? fmtW(gridConsW) : gridFeedW > 0 ? fmtW(gridFeedW) : '–'); r.valGrid.setAttribute('class', 'scc-house-value ' + valueColorClass('grid')); }
                 if (r.subGrid) { r.subGrid.textContent = (gridConsW > 0 ? 'Bezug' : gridFeedW > 0 ? 'Einspeisung' : ''); r.subGrid.setAttribute('class', 'scc-house-sublabel ' + valueColorClass('grid')); }
+                var socPercent = firstSoc != null ? Math.min(100, Math.max(0, Number(firstSoc))) : 0;
+                var isCharging = totalChargeW > 0;
+                var isDischarging = totalDischargeW > 0;
+                var segFill = isCharging ? '#00c853' : (isDischarging ? '#c62828' : 'rgba(255,255,255,0.25)');
+                var segEmpty = 'rgba(255,255,255,0.08)';
+                var lastFilledIdx = Math.max(-1, Math.min(4, Math.floor(socPercent / 20) - 1));
+                [r.batSeg0, r.batSeg1, r.batSeg2, r.batSeg3, r.batSeg4].forEach(function (el, i) {
+                    if (!el) return;
+                    var threshold = (i + 1) * 20;
+                    var filled = socPercent >= threshold;
+                    el.setAttribute('fill', filled ? segFill : segEmpty);
+                    el.classList.remove('scc-battery-seg--fill', 'scc-battery-seg--charging');
+                    if (filled) {
+                        el.classList.add('scc-battery-seg--fill');
+                        if ((isCharging || isDischarging) && i === lastFilledIdx) el.classList.add('scc-battery-seg--charging');
+                    }
+                });
             }
 
             function render(data) {
@@ -758,10 +838,12 @@
                     if (flowDiagramEl) renderFlowDiagram(emptyData, flowDiagramEl);
                     var objLink = window.location.pathname.replace(/\/adapter\/[^/]+\/.*$/, '/#tab-objects');
                     diagram.innerHTML =
-                        '<p class="scc-msg scc-msg-error"><strong>Keine Verbindung</strong> – der Tab kann in dieser Admin-Umgebung nicht auf die Adapter-Daten zugreifen.</p>' +
-                        '<p class="scc-hint">Die Werte liegen unter <strong>Objekte → ' + instanceId + '</strong>. ' +
+                        '<p class="scc-msg scc-msg-error"><strong>Keine Verbindung</strong> – der Tab kann in dieser Admin-Umgebung nicht auf die Adapter-Daten zugreifen (oft Socket.io/Admin-Kontext).</p>' +
+                        '<p class="scc-hint">Zuerst <strong>Erneut versuchen</strong>. Die Werte liegen unter <strong>Objekte → ' + instanceId + '</strong>. ' +
                         'In <strong>VIS</strong> oder <strong>Material</strong> die Datenpunkte einbinden.</p>' +
-                        '<p><a href="' + objLink + '" target="_blank" rel="noopener" class="scc-link">Objekte im Admin öffnen</a></p>';
+                        '<p><button type="button" id="scc-retry-btn" class="scc-btn scc-btn-primary">Erneut versuchen</button> <a href="' + objLink + '" target="_blank" rel="noopener" class="scc-link">Objekte im Admin öffnen</a></p>';
+                    var retryBtn = document.getElementById('scc-retry-btn');
+                    if (retryBtn) retryBtn.onclick = function () { loadFlowData(render, true); };
                     if (sourcesEl) sourcesEl.innerHTML = '';
                     var evccViz = document.getElementById('scc-evcc-viz');
                     if (evccViz) evccViz.innerHTML = '';

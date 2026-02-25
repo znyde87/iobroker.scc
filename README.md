@@ -101,6 +101,8 @@ This warning appears when a rule (e.g. PID output) writes to a state that has no
 
 ## Changelog
 
+**Current version: 0.3.5**
+
 See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 
 ---
@@ -129,6 +131,8 @@ The script `scripts/sync-version.js` runs in the **version** lifecycle and copie
 ---
 
 ## License
+
+Copyright (c) 2026 ioBroker
 
 MIT License. See [LICENSE](LICENSE).
 

@@ -422,6 +422,18 @@
 .scc-house-connectors .scc-house-conn:hover {
     stroke: rgba(255, 255, 255, 0.5);
 }
+/* Dynamische Batterie-Segmente im Hausbild (Koordinaten 645,998 701,979 701,906 645,923) */
+.scc-house-battery-display .scc-battery-seg {
+    transition: fill 0.35s ease;
+}
+.scc-house-battery-display .scc-battery-seg--charging {
+    animation: scc-battery-pulse 1.2s ease-in-out infinite;
+}
+@keyframes scc-battery-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
 .scc-house-labels .scc-house-label-block { pointer-events: none; }
 .scc-house-label-top .scc-house-value { fill: var(--scc-heading); }
 .scc-house-label-top .scc-house-label { fill: var(--scc-muted); }
