@@ -382,29 +382,39 @@
     stroke: rgba(0,0,0,0);
     transition: stroke-width 0.25s ease;
 }
-.scc-house-lines .scc-house-line--active { stroke-width: 7; filter: url(#scc-flow-glow); }
+.scc-house-lines .scc-house-line--active { stroke-width: 7; filter: url(#scc-flow-glow-abs); }
 .scc-house-lines .scc-house-line--active.scc-house-line--green { stroke: url(#scc-green-flow); }
 .scc-house-lines .scc-house-line--active.scc-house-line--red { stroke: url(#scc-red-flow); }
 .scc-house-lines .scc-house-line--active.scc-house-line--mixed { stroke: url(#scc-mixed-flow); }
+/* Wallbox/Wärmepumpe: Vollton-Stroke */
+/* Comet-Stroke wird per JS (url(#scc-comet-…)) gesetzt; Wallbox/Wärmepumpe nutzen dieselben Gradiente */
 
-/* Animierte Flusslinien: kurze Striche + Glow */
+/* Animierte Flusslinien mit Kometen-Effekt (Gradient entlang Pfad: vorne hell → hinten transparent) */
 .scc-house-lines .scc-house-line--active {
-    stroke-dasharray: 6 22;
+    stroke-dasharray: 5 25; /* Periode 30 */
     animation-duration: 0.9s;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
 }
 .scc-house-lines .scc-house-line--active.scc-house-line--dir-fwd { animation-name: sccFlowDashFwd; }
 .scc-house-lines .scc-house-line--active.scc-house-line--dir-rev { animation-name: sccFlowDashRev; }
+/* Gestrichelte Linien (Wallbox/Wärmepumpe) */
+.scc-house-lines .scc-house-line--dashed.scc-house-line--active.scc-house-line--dir-fwd { animation-name: sccFlowDashFwd; stroke-dasharray: 5 25; }
+.scc-house-lines .scc-house-line--dashed.scc-house-line--active.scc-house-line--dir-rev { animation-name: sccFlowDashRev; stroke-dasharray: 5 25; }
 
 @keyframes sccFlowDashFwd {
     from { stroke-dashoffset: 0; }
-    to { stroke-dashoffset: -28; } /* Periode 6+22 = 28, nahtlos */
+    to { stroke-dashoffset: -30; }
 }
 @keyframes sccFlowDashRev {
     from { stroke-dashoffset: 0; }
-    to { stroke-dashoffset: 28; }
+    to { stroke-dashoffset: 30; }
 }
+/* Netzpfad Ende (918,950) leicht durchsichtig */
+.scc-house-lines .scc-house-line-base--grid-end { stroke-opacity: 0.45; }
+.scc-house-lines .scc-house-line--grid-end.scc-house-line--active { stroke-opacity: 0.65; }
+/* Wallbox / Wärmepumpe: Grundlinie gestrichelt (inaktiv), aktiv = Komet-Muster (oben definiert) */
+.scc-house-lines .scc-house-line--dashed { stroke-dasharray: 5 8; }
 .scc-house-dot {
     fill: var(--scc-card-bg);
     stroke: var(--scc-text);

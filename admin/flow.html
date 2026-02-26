@@ -412,9 +412,17 @@
                 var reservedW = states[prefix + 'batteries.powerReservedW'];
                 var allCharged = states[prefix + 'batteries.allCharged'];
                 var consumptionTotalW = states[prefix + 'consumption.totalW'];
+                var consumptionWallboxW = states[prefix + 'consumption.wallboxW'];
+                var consumptionHeatPumpW = states[prefix + 'consumption.heatPumpW'];
+                var consumptionWallboxEnabled = states[prefix + 'consumption.wallboxEnabled'];
+                var consumptionHeatPumpEnabled = states[prefix + 'consumption.heatPumpEnabled'];
                 var gridConsW = states[prefix + 'grid.consumptionW'];
                 var gridFeedW = states[prefix + 'grid.feedInW'];
                 var genW = states[prefix + 'generation.totalW'];
+                var wallboxW = consumptionWallboxW && consumptionWallboxW.val != null ? Number(consumptionWallboxW.val) : 0;
+                var heatPumpW = consumptionHeatPumpW && consumptionHeatPumpW.val != null ? Number(consumptionHeatPumpW.val) : 0;
+                var wallboxEnabled = !!(consumptionWallboxEnabled && consumptionWallboxEnabled.val === true);
+                var useHeatPumpImage = !!(consumptionHeatPumpEnabled && consumptionHeatPumpEnabled.val === true);
                 return {
                     surplus: {
                         powerW: powerW && powerW.val != null ? powerW.val : 0,
@@ -426,7 +434,12 @@
                         totalDischargeW: 0,
                         allCharged: allCharged && allCharged.val === true
                     },
-                    consumption: { totalW: consumptionTotalW && consumptionTotalW.val != null ? consumptionTotalW.val : 0 },
+                    consumption: {
+                        totalW: consumptionTotalW && consumptionTotalW.val != null ? consumptionTotalW.val : 0,
+                        wallboxW: wallboxW,
+                        heatPumpW: heatPumpW
+                    },
+                    widgetOptions: { wallboxEnabled: wallboxEnabled, useHeatPumpImage: useHeatPumpImage },
                     grid: {
                         consumptionW: gridConsW && gridConsW.val != null ? gridConsW.val : 0,
                         feedInW: gridFeedW && gridFeedW.val != null ? gridFeedW.val : 0
@@ -516,6 +529,10 @@
                         instanceId + '.batteries.powerReservedW',
                         instanceId + '.batteries.allCharged',
                         instanceId + '.consumption.totalW',
+                        instanceId + '.consumption.wallboxW',
+                        instanceId + '.consumption.heatPumpW',
+                        instanceId + '.consumption.wallboxEnabled',
+                        instanceId + '.consumption.heatPumpEnabled',
                         instanceId + '.grid.consumptionW',
                         instanceId + '.grid.feedInW',
                         instanceId + '.generation.totalW'
@@ -573,10 +590,11 @@
             function loadFlowData(cb, isRetry) {
                 var done = false;
                 if (isRetry) fetchTried = false;
-                function finish(data) {
+                function finish(data, source) {
                     if (done) return;
                     done = true;
-                    sccLog('loadFlowData finish', data ? 'Daten' : 'keine Daten');
+                    sccLog('loadFlowData finish', data ? 'Daten' : 'keine Daten', source || '');
+                    console.log('[SCC Flow] loadFlowData finish', source || 'unknown', data ? { consumption: data.consumption, widgetOptions: data.widgetOptions } : 'null');
                     cb(data);
                 }
                 if (window.__sccStandalone) {
@@ -584,9 +602,9 @@
                         if (!r.ok) throw new Error();
                         return r.json();
                     }).then(function (data) {
-                        if (data && data.surplus) finish(data);
-                        else finish(null);
-                    }).catch(function () { finish(null); });
+                        if (data && data.surplus) finish(data, 'fetchStandalone');
+                        else finish(null, 'fetchStandalone');
+                    }).catch(function () { finish(null, 'fetchStandalone'); });
                     return;
                 }
                 function trySendToThenFetch() {
@@ -600,7 +618,7 @@
                             clearTimeout(t);
                             sccLog('sendTo getFlowData Antwort', err ? 'err' : 'ok', data && data.surplus ? 'surplus' : '');
                             if (!done && (err || !data || !data.surplus)) loadFlowDataViaFetch(finish, true);
-                            else if (!done && data && data.surplus) finish(data);
+                            else if (!done && data && data.surplus) finish(data, 'sendTo');
                         });
                     } else {
                         sccLog('loadFlowData: kein sendTo, nutze Fetch');
@@ -608,9 +626,9 @@
                     }
                 }
                 loadFlowDataViaFlowDataState(function (data) {
-                    if (data) return finish(data);
+                    if (data) return finish(data, 'flowDataState');
                     loadFlowDataViaStates(function (d) {
-                        if (d) return finish(d);
+                        if (d) return finish(d, 'fromStates');
                         trySendToThenFetch();
                     });
                 });
@@ -622,7 +640,7 @@
                     }).then(function (data) {
                         if (data && data.surplus) {
                             window.__sccStandalone = true;
-                            finish(data);
+                            finish(data, 'fetchTimeout');
                         }
                     }).catch(function () {});
                 }, 0);
@@ -656,7 +674,17 @@
                 var batStatus = totalChargeW > 0 ? 'lädt' : (totalDischargeW > 0 ? 'entlädt' : 'wartet');
                 var pathname = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
                 var adminBase = pathname.replace(/\/[^/]*$/, '') || '.';
-                var houseImgUrl = adminBase + '/house.png';
+                var wallboxW = (data.consumption && data.consumption.wallboxW != null) ? Number(data.consumption.wallboxW) : 0;
+                var heatPumpW = (data.consumption && data.consumption.heatPumpW != null) ? Number(data.consumption.heatPumpW) : 0;
+                var useHeatPumpImage = (data.widgetOptions && typeof data.widgetOptions.useHeatPumpImage === 'boolean')
+                    ? data.widgetOptions.useHeatPumpImage
+                    : (!!(data.widgetOptions && data.widgetOptions.useHeatPumpImage) || (data.consumption && data.consumption.heatPumpW != null));
+                var wallboxEnabled = (data.widgetOptions && typeof data.widgetOptions.wallboxEnabled === 'boolean')
+                    ? data.widgetOptions.wallboxEnabled
+                    : (!!(data.widgetOptions && data.widgetOptions.wallboxEnabled) || (data.consumption && data.consumption.wallboxW != null));
+                var flowWallboxCls = lineCls(wallboxW > 0, 'wallbox') + ' scc-house-line--dashed';
+                var flowHeatpumpCls = lineCls(heatPumpW > 0, 'heatpump') + ' scc-house-line--dashed';
+                var houseImgUrl = adminBase + (useHeatPumpImage ? '/house_heatpump2.png' : '/house.png');
                 var vb = '0 0 1024 1536';
 
                 // Richtung: PV = Module → WR (umgekehrt zum Kabel), Netz Einspeisung=grün→Netz, Bezug=rot←Netz
@@ -665,12 +693,19 @@
                     if (kind === 'house') return 'scc-house-line--dir-fwd';
                     if (kind === 'battery') return (totalDischargeW > 0 && totalChargeW <= 0) ? 'scc-house-line--dir-rev' : 'scc-house-line--dir-fwd';
                     if (kind === 'grid') return (gridFeedW > 0) ? 'scc-house-line--dir-fwd' : 'scc-house-line--dir-rev';
+                    if (kind === 'wallbox') return 'scc-house-line--dir-rev';
+                    if (kind === 'heatpump') return 'scc-house-line--dir-fwd';
                     return 'scc-house-line--dir-fwd';
                 }
                 function flowColorClass(type) {
                     if (type === 'pv' || type === 'battery') return 'scc-house-line--green';
                     if (type === 'grid') return (gridFeedW > 0) ? 'scc-house-line--green' : 'scc-house-line--red';
                     if (type === 'house') {
+                        if (gridConsW > 0 && genW > 0) return 'scc-house-line--mixed';
+                        if (gridConsW > 0) return 'scc-house-line--red';
+                        return 'scc-house-line--green';
+                    }
+                    if (type === 'wallbox' || type === 'heatpump') {
                         if (gridConsW > 0 && genW > 0) return 'scc-house-line--mixed';
                         if (gridConsW > 0) return 'scc-house-line--red';
                         return 'scc-house-line--green';
@@ -707,25 +742,32 @@
                 var pathPv = 'M 499 798 L 498 758 L 452 702 L 553 678 L 652 657 L 743 635';
                 var pathPvFlow = 'M 743 635 L 652 657 L 553 678 L 452 702 L 498 758 L 499 798'; // Module → WR
                 var pathHaus = 'M 463 815 L 425 825 L 380 812 L 379 838';
-                var pathNetz = 'M 546 818 L 829 746 L 831 776 L 832 984';
+                var pathNetzToDevice = 'M 547 801 L 848 729 L 848 766';   // bis Gerät, dann Lücke
+                var pathNetzFromDevice = 'M 850 842 L 850 918';         // ab Gerät
+                var pathNetzEnd = 'M 850 918 L 918 950';                 // Ende leicht durchsichtig
                 var pathBatterie = 'M 546 845 L 657 815 L 657 869';
-                // Nur Beschriftung (Wert + Label), keine Karten-Hintergründe; Linien senkrecht
+                var pathWallbox = 'M 196 858 L 196 908';
+                var pathHeatPump = 'M 764 750 L 764 840'; // vertikal; eingespeist wie Last (Netz/PV/Mix)
+                // Connectors
                 var connPv = 'M 521 200 L 521 574';
                 var connLast = 'M 379 140 L 379 838';
-                // Unten: Batterie (669,942), Netz (857,810) → Karten bei y=1330, Linie senkrecht nach oben
                 var connBattery = 'M 669 1330 L 669 942';
-                var connNetz = 'M 857 1330 L 857 810';
+                var connNetz = 'M 918 1330 L 918 950';
                 if (!container.__sccHouseRefs) {
                     container.innerHTML =
                         '<div class="scc-house-wrap">' +
                         '  <img class="scc-house-img" src="' + houseImgUrl + '" alt=""/>' +
                         '  <svg class="scc-house-svg" viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
                         '    <defs>' +
-                        '      <linearGradient id="scc-green-flow" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#00c853"/><stop offset="35%" stop-color="#69f0ae"/><stop offset="65%" stop-color="#69f0ae"/><stop offset="100%" stop-color="#00c853"/></linearGradient>' +
-                        '      <linearGradient id="scc-red-flow" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#b71c1c"/><stop offset="35%" stop-color="#ff6b6b"/><stop offset="65%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#b71c1c"/></linearGradient>' +
-                        '      <linearGradient id="scc-mixed-flow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#5aff78"/><stop offset="50%" stop-color="#5aff78"/><stop offset="50%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#ff6b6b"/></linearGradient>' +
-                        '      <filter id="scc-flow-glow" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">' +
-                        '        <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>' +
+                        '      <linearGradient id="scc-green-flow" gradientUnits="userSpaceOnUse" x1="512" y1="0" x2="512" y2="1536"><stop offset="0%" stop-color="#00c853"/><stop offset="35%" stop-color="#69f0ae"/><stop offset="65%" stop-color="#69f0ae"/><stop offset="100%" stop-color="#00c853"/></linearGradient>' +
+                        '      <linearGradient id="scc-red-flow" gradientUnits="userSpaceOnUse" x1="512" y1="0" x2="512" y2="1536"><stop offset="0%" stop-color="#b71c1c"/><stop offset="35%" stop-color="#ff6b6b"/><stop offset="65%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#b71c1c"/></linearGradient>' +
+                        '      <linearGradient id="scc-mixed-flow" gradientUnits="userSpaceOnUse" x1="0" y1="768" x2="1024" y2="768"><stop offset="0%" stop-color="#5aff78"/><stop offset="50%" stop-color="#5aff78"/><stop offset="50%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#ff6b6b"/></linearGradient>' +
+                        '      <filter id="scc-flow-glow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">' +
+                        '        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>' +
+                        '        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+                        '      </filter>' +
+                        '      <filter id="scc-flow-glow-abs" filterUnits="userSpaceOnUse" x="-60" y="-60" width="1144" height="1656" color-interpolation-filters="sRGB">' +
+                        '        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>' +
                         '        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
                         '      </filter>' +
                         '    </defs>' +
@@ -739,11 +781,19 @@
                         '      <path data-scc="base-pv" fill="none" />' +
                         '      <path data-scc="base-house" fill="none" />' +
                         '      <path data-scc="base-grid" fill="none" />' +
+                        '      <path data-scc="base-grid-from" fill="none" />' +
+                        '      <path data-scc="base-grid-end" fill="none" />' +
                         '      <path data-scc="base-battery" fill="none" />' +
+                        '      <path data-scc="base-wallbox" fill="none" />' +
+                        '      <path data-scc="base-heatpump" fill="none" />' +
                         '      <path data-scc="flow-pv" fill="none" pathLength="100" />' +
                         '      <path data-scc="flow-house" fill="none" pathLength="100" />' +
                         '      <path data-scc="flow-grid" fill="none" pathLength="100" />' +
+                        '      <path data-scc="flow-grid-from" fill="none" pathLength="100" />' +
+                        '      <path data-scc="flow-grid-end" fill="none" pathLength="100" />' +
                         '      <path data-scc="flow-battery" fill="none" pathLength="100" />' +
+                        '      <path data-scc="flow-wallbox" fill="none" pathLength="100" />' +
+                        '      <path data-scc="flow-heatpump" fill="none" pathLength="100" />' +
                         '    </g>' +
                         '    <g class="scc-house-battery-display" transform="matrix(1.1875,-0.3542,0,0.9872,640.25,912.55)">' +
                         '      <rect class="scc-battery-outline" x="0" y="0" width="56" height="92" rx="10" ry="10" fill="none" stroke="none"/>' +
@@ -757,7 +807,7 @@
                         '      <g class="scc-house-label-block scc-house-label-top" transform="translate(521, 200)"><text data-scc="val-pv" class="scc-house-value" y="0" text-anchor="middle">–</text><text class="scc-house-label" y="50" text-anchor="middle">Photovoltaik</text></g>' +
                         '      <g class="scc-house-label-block scc-house-label-top" transform="translate(379, 140)"><text data-scc="val-house" class="scc-house-value" y="0" text-anchor="middle">–</text><text class="scc-house-label" y="50" text-anchor="middle">Last</text></g>' +
                         '      <g class="scc-house-label-block scc-house-label-bottom" transform="translate(669, 1330)"><text data-scc="val-battery" class="scc-house-value" y="0" text-anchor="middle">–</text><text data-scc="lab-battery" class="scc-house-label" y="50" text-anchor="middle">Batterie</text></g>' +
-                        '      <g class="scc-house-label-block scc-house-label-bottom" transform="translate(857, 1330)"><text data-scc="val-grid" class="scc-house-value" y="0" text-anchor="middle">–</text><text data-scc="sub-grid" class="scc-house-sublabel" y="48" text-anchor="middle"></text><text class="scc-house-label" y="72" text-anchor="middle">Netz</text></g>' +
+                        '      <g class="scc-house-label-block scc-house-label-bottom" transform="translate(918, 1330)"><text data-scc="val-grid" class="scc-house-value" y="0" text-anchor="middle">–</text><text data-scc="sub-grid" class="scc-house-sublabel" y="48" text-anchor="middle"></text><text class="scc-house-label" y="72" text-anchor="middle">Netz</text></g>' +
                         '    </g>' +
                         '  </svg>' +
                         '</div>';
@@ -767,11 +817,19 @@
                         basePv: container.querySelector('[data-scc="base-pv"]'),
                         baseHouse: container.querySelector('[data-scc="base-house"]'),
                         baseGrid: container.querySelector('[data-scc="base-grid"]'),
+                        baseGridFrom: container.querySelector('[data-scc="base-grid-from"]'),
+                        baseGridEnd: container.querySelector('[data-scc="base-grid-end"]'),
                         baseBattery: container.querySelector('[data-scc="base-battery"]'),
+                        baseWallbox: container.querySelector('[data-scc="base-wallbox"]'),
+                        baseHeatpump: container.querySelector('[data-scc="base-heatpump"]'),
                         flowPv: container.querySelector('[data-scc="flow-pv"]'),
                         flowHouse: container.querySelector('[data-scc="flow-house"]'),
                         flowGrid: container.querySelector('[data-scc="flow-grid"]'),
+                        flowGridFrom: container.querySelector('[data-scc="flow-grid-from"]'),
+                        flowGridEnd: container.querySelector('[data-scc="flow-grid-end"]'),
                         flowBattery: container.querySelector('[data-scc="flow-battery"]'),
+                        flowWallbox: container.querySelector('[data-scc="flow-wallbox"]'),
+                        flowHeatpump: container.querySelector('[data-scc="flow-heatpump"]'),
                         valPv: container.querySelector('[data-scc="val-pv"]'),
                         valHouse: container.querySelector('[data-scc="val-house"]'),
                         valBattery: container.querySelector('[data-scc="val-battery"]'),
@@ -788,15 +846,42 @@
 
                 var r = container.__sccHouseRefs;
                 if (r.img) r.img.src = houseImgUrl;
+                var gridActive = gridConsW > 0 || gridFeedW > 0;
                 if (r.basePv) { r.basePv.setAttribute('d', pathPv); r.basePv.setAttribute('class', baseCls('pv')); }
                 if (r.baseHouse) { r.baseHouse.setAttribute('d', pathHaus); r.baseHouse.setAttribute('class', baseCls('house')); }
-                if (r.baseGrid) { r.baseGrid.setAttribute('d', pathNetz); r.baseGrid.setAttribute('class', baseCls('grid')); }
+                if (r.baseGrid) { r.baseGrid.setAttribute('d', pathNetzToDevice); r.baseGrid.setAttribute('class', baseCls('grid')); }
+                if (r.baseGridFrom) { r.baseGridFrom.setAttribute('d', pathNetzFromDevice); r.baseGridFrom.setAttribute('class', baseCls('grid')); }
+                if (r.baseGridEnd) { r.baseGridEnd.setAttribute('d', pathNetzEnd); r.baseGridEnd.setAttribute('class', baseCls('grid') + ' scc-house-line-base--grid-end'); }
                 if (r.baseBattery) { r.baseBattery.setAttribute('d', pathBatterie); r.baseBattery.setAttribute('class', baseCls('battery')); }
-
-                if (r.flowPv) { r.flowPv.setAttribute('d', pathPvFlow); r.flowPv.setAttribute('class', lineCls(genW > 0, 'pv')); }
-                if (r.flowHouse) { r.flowHouse.setAttribute('d', pathHaus); r.flowHouse.setAttribute('class', lineCls(consumptionW > 0, 'house')); }
-                if (r.flowGrid) { r.flowGrid.setAttribute('d', pathNetz); r.flowGrid.setAttribute('class', lineCls(gridConsW > 0 || gridFeedW > 0, 'grid')); }
-                if (r.flowBattery) { r.flowBattery.setAttribute('d', pathBatterie); r.flowBattery.setAttribute('class', lineCls(totalChargeW > 0 || totalDischargeW > 0, 'battery')); }
+                function setFlowPath(el, d, pathKey, active) {
+                    if (!el) return;
+                    el.setAttribute('d', d);
+                    el.setAttribute('class', lineCls(active, pathKey === 'grid-from' || pathKey === 'grid-end' ? 'grid' : pathKey));
+                    el.style.stroke = '';
+                }
+                setFlowPath(r.flowPv, pathPvFlow, 'pv', genW > 0);
+                setFlowPath(r.flowHouse, pathHaus, 'house', consumptionW > 0);
+                setFlowPath(r.flowGrid, pathNetzToDevice, 'grid', gridActive);
+                setFlowPath(r.flowGridFrom, pathNetzFromDevice, 'grid-from', gridActive);
+                setFlowPath(r.flowGridEnd, pathNetzEnd, 'grid-end', gridActive);
+                setFlowPath(r.flowBattery, pathBatterie, 'battery', totalChargeW > 0 || totalDischargeW > 0);
+                /* Wallbox/Heatpump: Base = graue Grundlinie (immer sichtbar), Flow = animierte Linie darüber */
+                if (r.baseWallbox) {
+                    if (wallboxEnabled) { r.baseWallbox.setAttribute('d', pathWallbox); r.baseWallbox.setAttribute('class', baseCls('wallbox')); r.baseWallbox.removeAttribute('style'); }
+                    else { r.baseWallbox.setAttribute('style', 'display:none'); }
+                }
+                if (r.baseHeatpump) {
+                    if (useHeatPumpImage) { r.baseHeatpump.setAttribute('d', pathHeatPump); r.baseHeatpump.setAttribute('class', baseCls('heatpump')); r.baseHeatpump.removeAttribute('style'); }
+                    else { r.baseHeatpump.setAttribute('style', 'display:none'); }
+                }
+                if (r.flowWallbox) {
+                    if (wallboxEnabled) { setFlowPath(r.flowWallbox, pathWallbox, 'wallbox', wallboxW > 0); r.flowWallbox.setAttribute('class', r.flowWallbox.getAttribute('class') + ' scc-house-line--dashed'); r.flowWallbox.style.display = ''; }
+                    else { r.flowWallbox.style.display = 'none'; }
+                }
+                if (r.flowHeatpump) {
+                    if (useHeatPumpImage) { setFlowPath(r.flowHeatpump, pathHeatPump, 'heatpump', heatPumpW > 0); r.flowHeatpump.setAttribute('class', r.flowHeatpump.getAttribute('class') + ' scc-house-line--dashed'); r.flowHeatpump.style.display = ''; }
+                    else { r.flowHeatpump.style.display = 'none'; }
+                }
 
                 if (r.valPv) { r.valPv.textContent = fmtW(genW); r.valPv.setAttribute('class', 'scc-house-value ' + valueColorClass('pv')); }
                 if (r.valHouse) { r.valHouse.textContent = fmtW(consumptionW); r.valHouse.setAttribute('class', 'scc-house-value ' + valueColorClass('house')); }
@@ -864,6 +949,7 @@
                 window.__sccLastFlowData = data;
                 try { document.body.classList.add('scc-has-data'); } catch (e) {}
                 sccLog('render: Daten', data.surplus.powerW, 'W Überschuss');
+                console.log('[SCC Flow] render erhält data.consumption:', JSON.stringify(data.consumption), 'widgetOptions:', JSON.stringify(data.widgetOptions));
                 var autarkyPct = data.autarky && data.autarky.percent != null ? data.autarky.percent : null;
                 var autarkyValEl = document.getElementById('scc-autarky-value');
                 if (autarkyValEl) autarkyValEl.textContent = autarkyPct != null ? Math.round(autarkyPct) : '–';
@@ -929,7 +1015,11 @@
                 var sourcesListEl = document.getElementById('scc-sources-list');
                 var rulesListEl = document.getElementById('scc-rules-list');
                 if (sourcesListEl) {
-                    var list = (data.sourcesList && data.sourcesList.length) ? data.sourcesList : [];
+                    var list = (data.sourcesList && data.sourcesList.length) ? data.sourcesList.slice() : [];
+                    var wallboxInList = (data.widgetOptions && typeof data.widgetOptions.wallboxEnabled === 'boolean') ? data.widgetOptions.wallboxEnabled : (!!(data.widgetOptions && data.widgetOptions.wallboxEnabled) || (data.consumption && data.consumption.wallboxW != null));
+                    var heatPumpInList = (data.widgetOptions && typeof data.widgetOptions.useHeatPumpImage === 'boolean') ? data.widgetOptions.useHeatPumpImage : (!!(data.widgetOptions && data.widgetOptions.useHeatPumpImage) || (data.consumption && data.consumption.heatPumpW != null));
+                    if (wallboxInList) list.push({ name: 'Wallbox', lastValueW: (data.consumption && data.consumption.wallboxW != null) ? Number(data.consumption.wallboxW) : 0 });
+                    if (heatPumpInList) list.push({ name: 'Wärmepumpe', lastValueW: (data.consumption && data.consumption.heatPumpW != null) ? Number(data.consumption.heatPumpW) : 0 });
                     sourcesListEl.innerHTML = list.length === 0
                         ? '<p class="scc-muted-small">Keine Quellen mit Namen.</p>'
                         : '<ul class="scc-named-list">' + list.map(function (item) {
@@ -1850,7 +1940,7 @@
                 window.parent.postMessage({
                     type: 'scc-flow-request',
                     instanceId: instanceId,
-                    ids: [instanceId + '.flowData', instanceId + '.surplus.powerW', instanceId + '.surplus.availableForDevicesW', instanceId + '.surplus.feedInW', instanceId + '.batteries.powerReservedW', instanceId + '.batteries.allCharged', instanceId + '.consumption.totalW', instanceId + '.grid.consumptionW', instanceId + '.grid.feedInW', instanceId + '.generation.totalW']
+                    ids: [instanceId + '.flowData', instanceId + '.surplus.powerW', instanceId + '.surplus.availableForDevicesW', instanceId + '.surplus.feedInW', instanceId + '.batteries.powerReservedW', instanceId + '.batteries.allCharged', instanceId + '.consumption.totalW', instanceId + '.consumption.wallboxW', instanceId + '.consumption.heatPumpW', instanceId + '.consumption.wallboxEnabled', instanceId + '.consumption.heatPumpEnabled', instanceId + '.grid.consumptionW', instanceId + '.grid.feedInW', instanceId + '.generation.totalW']
                 }, '*');
             } catch (err) {}
 

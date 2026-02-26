@@ -154,6 +154,50 @@
           "newLine": true,
           "customFilter": { "common": { "type": "number" } },
           "help": { "de": "State mit vorhergesagter PV-Leistung (eine Zahl oder Objekt mit powerW/power).", "en": "State with predicted PV power (number or object with powerW/power)." }
+        },
+        "_headerWidget": {
+          "type": "header",
+          "text": { "de": "Haus-Fluss-Widget (VIS/Flow)", "en": "House flow widget (VIS/Flow)" },
+          "size": 3,
+          "newLine": true
+        },
+        "heatPumpEnabled": {
+          "type": "checkbox",
+          "label": { "de": "Wärmepumpe anzeigen", "en": "Show heat pump" },
+          "sm": 6,
+          "xs": 12,
+          "md": 6,
+          "lg": 6,
+          "xl": 6,
+          "newLine": true,
+          "help": { "de": "Wenn aktiv: Wärmepumpe im Haus-Fluss mit Strombezug und anderes Hintergrundbild.", "en": "If enabled: heat pump in house flow with power state and different background image." }
+        },
+        "heatPumpStateId": {
+          "type": "objectId",
+          "label": { "de": "Wärmepumpe Strombezug (W)", "en": "Heat pump power draw (W)" },
+          "sm": 6,
+          "newLine": false,
+          "customFilter": { "common": { "type": "number" } },
+          "help": { "de": "Datenpunkt für den Strombezug der Wärmepumpe in W.", "en": "State for heat pump power consumption in W." }
+        },
+        "wallboxEnabled": {
+          "type": "checkbox",
+          "label": { "de": "Wallbox anzeigen", "en": "Show wallbox" },
+          "sm": 6,
+          "xs": 12,
+          "md": 6,
+          "lg": 6,
+          "xl": 6,
+          "newLine": true,
+          "help": { "de": "Wenn aktiv: Wallbox im Haus-Fluss mit Strombezug (Strichlinie).", "en": "If enabled: wallbox in house flow with power state (dashed line)." }
+        },
+        "wallboxStateId": {
+          "type": "objectId",
+          "label": { "de": "Wallbox Strombezug (W)", "en": "Wallbox power draw (W)" },
+          "sm": 6,
+          "newLine": false,
+          "customFilter": { "common": { "type": "number" } },
+          "help": { "de": "Datenpunkt für den Strombezug der Wallbox in W.", "en": "State for wallbox power consumption in W." }
         }
       }
     },

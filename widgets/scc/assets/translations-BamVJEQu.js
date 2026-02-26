@@ -1,0 +1,1 @@
+const o="SCC Energy flow (house)",s="Flow data (e.g. scc.0.flowData)",c={scc_House_Flow:o,scc_flowData_oid:s},a="SCC Energiefluss (Haus)",t="Flow-Daten (z.B. scc.0.flowData)",l={scc_House_Flow:a,scc_flowData_oid:t},n={en:c,de:l,prefix:"scc_"};export{n as default};

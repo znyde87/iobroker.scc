@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 
+# VIS-2-Widget-Build (Output liegt in widgets/scc/; zum Bauen: npm run build:widgets)
+vis2-widgets/node_modules/
+vis2-widgets/build/
+vis2-widgets/.__mf__temp/
+
 # npm
 npm-debug.log*
 package-lock.json

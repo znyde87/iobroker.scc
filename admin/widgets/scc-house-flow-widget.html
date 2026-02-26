@@ -1,0 +1,255 @@
+<!-- SCC Haus-Grafik mit Energieflüssen – für VIS 2 (HTML-Widget) -->
+<!-- Datenpunkt: scc.0.flowData (im VIS-Widget OID setzen oder unten oid anpassen) -->
+<!-- Optional: Hausbild unter dem SVG – Bild-URL anpassen (z.B. /adapter/scc/0/house.png) -->
+<div id="scc-house-widget-root" class="scc-house-widget">
+  <div class="scc-house-wrap">
+    <img class="scc-house-img" id="scc-house-widget-img" src="" alt="" style="display:none;">
+    <svg class="scc-house-svg" id="scc-house-widget-svg" viewBox="0 0 1024 1536" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <defs>
+        <linearGradient id="scc-widget-green-flow" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#00c853"/><stop offset="35%" stop-color="#69f0ae"/><stop offset="65%" stop-color="#69f0ae"/><stop offset="100%" stop-color="#00c853"/></linearGradient>
+        <linearGradient id="scc-widget-red-flow" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#b71c1c"/><stop offset="35%" stop-color="#ff6b6b"/><stop offset="65%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#b71c1c"/></linearGradient>
+        <linearGradient id="scc-widget-mixed-flow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#5aff78"/><stop offset="50%" stop-color="#5aff78"/><stop offset="50%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#ff6b6b"/></linearGradient>
+        <filter id="scc-widget-flow-glow" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <g class="scc-house-connectors">
+        <path d="M 521 200 L 521 574" class="scc-house-conn"/>
+        <path d="M 379 140 L 379 838" class="scc-house-conn"/>
+        <path d="M 669 1330 L 669 942" class="scc-house-conn"/>
+        <path d="M 918 1330 L 918 950" class="scc-house-conn"/>
+      </g>
+      <g class="scc-house-lines">
+        <path data-scc="base-pv" fill="none"/>
+        <path data-scc="base-house" fill="none"/>
+        <path data-scc="base-grid" fill="none"/>
+        <path data-scc="base-grid-from" fill="none"/>
+        <path data-scc="base-grid-end" fill="none"/>
+        <path data-scc="base-battery" fill="none"/>
+        <path data-scc="base-wallbox" fill="none"/>
+        <path data-scc="base-heatpump" fill="none"/>
+        <path data-scc="flow-pv" fill="none" pathLength="100"/>
+        <path data-scc="flow-house" fill="none" pathLength="100"/>
+        <path data-scc="flow-grid" fill="none" pathLength="100"/>
+        <path data-scc="flow-grid-from" fill="none" pathLength="100"/>
+        <path data-scc="flow-grid-end" fill="none" pathLength="100"/>
+        <path data-scc="flow-battery" fill="none" pathLength="100"/>
+        <path data-scc="flow-wallbox" fill="none" pathLength="100"/>
+        <path data-scc="flow-heatpump" fill="none" pathLength="100"/>
+      </g>
+      <g class="scc-house-battery-display" transform="matrix(1.1875,-0.3542,0,0.9872,640.25,912.55)">
+        <rect class="scc-battery-outline" x="0" y="0" width="56" height="92" rx="10" ry="10" fill="none" stroke="none"/>
+        <rect data-scc="bat-seg-0" class="scc-battery-seg" x="4" y="74" width="48" height="14" rx="5" ry="5"/>
+        <rect data-scc="bat-seg-1" class="scc-battery-seg" x="4" y="58" width="48" height="14" rx="5" ry="5"/>
+        <rect data-scc="bat-seg-2" class="scc-battery-seg" x="4" y="42" width="48" height="14" rx="5" ry="5"/>
+        <rect data-scc="bat-seg-3" class="scc-battery-seg" x="4" y="26" width="48" height="14" rx="5" ry="5"/>
+        <rect data-scc="bat-seg-4" class="scc-battery-seg" x="4" y="10" width="48" height="14" rx="5" ry="5"/>
+      </g>
+      <g class="scc-house-labels">
+        <g class="scc-house-label-block scc-house-label-top" transform="translate(521, 200)"><text data-scc="val-pv" class="scc-house-value" y="0" text-anchor="middle">–</text><text class="scc-house-label" y="50" text-anchor="middle">Photovoltaik</text></g>
+        <g class="scc-house-label-block scc-house-label-top" transform="translate(379, 140)"><text data-scc="val-house" class="scc-house-value" y="0" text-anchor="middle">–</text><text class="scc-house-label" y="50" text-anchor="middle">Last</text></g>
+        <g class="scc-house-label-block scc-house-label-bottom" transform="translate(669, 1330)"><text data-scc="val-battery" class="scc-house-value" y="0" text-anchor="middle">–</text><text data-scc="lab-battery" class="scc-house-label" y="50" text-anchor="middle">Batterie</text></g>
+        <g class="scc-house-label-block scc-house-label-bottom" transform="translate(918, 1330)"><text data-scc="val-grid" class="scc-house-value" y="0" text-anchor="middle">–</text><text data-scc="sub-grid" class="scc-house-sublabel" y="48" text-anchor="middle"></text><text class="scc-house-label" y="72" text-anchor="middle">Netz</text></g>
+      </g>
+    </svg>
+  </div>
+</div>
+<style>
+.scc-house-widget { --scc-bg: #1a1a1e; --scc-text: #e0e0e0; --scc-muted: #9e9e9e; --scc-heading: #fff; }
+.scc-house-widget .scc-house-wrap { position: relative; width: 100%; max-width: 100%; margin: 0; aspect-ratio: 1024/1536; background: var(--scc-bg); border-radius: 12px; overflow: hidden; }
+.scc-house-widget .scc-house-img { position: absolute; left:0; top:0; width:100%; height:100%; object-fit: contain; object-position: center; }
+.scc-house-widget .scc-house-svg { position: absolute; left:0; top:0; width:100%; height:100%; pointer-events: none; }
+.scc-house-widget .scc-house-lines .scc-house-line-base { stroke: rgba(0,0,0,0.85); stroke-width: 5; stroke-linecap: round; }
+.scc-house-widget .scc-house-lines .scc-house-line { stroke-width: 6; stroke-linecap: round; stroke: rgba(0,0,0,0); transition: stroke-width .25s ease; }
+.scc-house-widget .scc-house-lines .scc-house-line--active { stroke-width: 7; filter: url(#scc-widget-flow-glow); }
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--green { stroke: url(#scc-widget-green-flow); }
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--red { stroke: url(#scc-widget-red-flow); }
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--mixed { stroke: url(#scc-widget-mixed-flow); }
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--wallbox.scc-house-line--green,
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--heatpump.scc-house-line--green { stroke: #00c853 !important; }
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--wallbox.scc-house-line--red,
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--heatpump.scc-house-line--red { stroke: #e53935 !important; }
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--wallbox.scc-house-line--mixed,
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--heatpump.scc-house-line--mixed { stroke: #5aff78 !important; }
+.scc-house-widget .scc-house-lines .scc-house-line--active { stroke-dasharray: 6 22; animation: scc-widget-dash .9s linear infinite; }
+.scc-house-widget .scc-house-lines .scc-house-line--active.scc-house-line--dir-rev { animation-direction: reverse; }
+@keyframes scc-widget-dash { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -28; } }
+.scc-house-widget .scc-house-connectors .scc-house-conn { fill: none; stroke: rgba(255,255,255,0.35); stroke-width: 1.8; stroke-dasharray: 6 10; stroke-linecap: round; }
+.scc-house-widget .scc-house-battery-display .scc-battery-seg { transition: fill .35s ease; }
+.scc-house-widget .scc-house-battery-display .scc-battery-seg--charging { animation: scc-widget-pulse 1.2s ease-in-out infinite; }
+@keyframes scc-widget-pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+.scc-house-widget .scc-house-labels .scc-house-label-block { pointer-events: none; }
+.scc-house-widget .scc-house-value { font-size: 42px; font-weight: 700; fill: var(--scc-heading); font-family: inherit; paint-order: stroke; stroke: rgba(0,0,0,.8); stroke-width: 5px; }
+.scc-house-widget .scc-house-label { font-size: 20px; fill: var(--scc-muted); font-family: inherit; text-transform: uppercase; letter-spacing: .05em; paint-order: stroke; stroke: rgba(0,0,0,.65); stroke-width: 3px; }
+.scc-house-widget .scc-house-sublabel { font-size: 18px; fill: var(--scc-muted); font-family: inherit; text-transform: uppercase; paint-order: stroke; stroke: rgba(0,0,0,.55); stroke-width: 2.5px; }
+.scc-house-widget .scc-house-value--green { fill: #5aff78 !important; }
+.scc-house-widget .scc-house-value--red { fill: #ff6b6b !important; }
+.scc-house-widget .scc-house-value--mixed { fill: #81c784; }
+.scc-house-widget .scc-house-value--muted { fill: var(--scc-muted) !important; }
+.scc-house-widget .scc-house-sublabel.scc-house-value--green { fill: #5aff78 !important; }
+.scc-house-widget .scc-house-sublabel.scc-house-value--red { fill: #ff6b6b !important; }
+.scc-house-widget .scc-house-sublabel.scc-house-value--muted { fill: var(--scc-muted) !important; }
+.scc-house-widget .scc-house-line-base--grid-end { stroke-opacity: 0.45; }
+.scc-house-widget .scc-house-line--grid-end.scc-house-line--active { stroke-opacity: 0.65; }
+.scc-house-widget .scc-house-line--dashed { stroke-dasharray: 6 10; }
+.scc-house-widget .scc-house-line--dashed.scc-house-line--active { stroke-dasharray: 6 22; }
+</style>
+<script>
+(function() {
+  var oid = 'scc.0.flowData';
+  try { if (typeof oidFlowData !== 'undefined') oid = oidFlowData; } catch(e) {}
+  try { if (typeof $$oid !== 'undefined' && $$oid) oid = $$oid; } catch(e) {}
+  var container = document.getElementById('scc-house-widget-svg');
+  if (!container) return;
+  var pathPv = 'M 499 798 L 498 758 L 452 702 L 553 678 L 652 657 L 743 635';
+  var pathPvFlow = 'M 743 635 L 652 657 L 553 678 L 452 702 L 498 758 L 499 798';
+  var pathHaus = 'M 463 815 L 425 825 L 380 812 L 379 838';
+  var pathNetzToDevice = 'M 547 801 L 848 729 L 848 766';
+  var pathNetzFromDevice = 'M 850 847 L 859 918';
+  var pathNetzEnd = 'M 859 918 L 918 950';
+  var pathBatterie = 'M 546 845 L 657 815 L 657 869';
+  var pathWallbox = 'M 196 858 L 196 908';
+  var pathHeatPump = 'M 764 750 L 764 840';
+  var imgEl = document.getElementById('scc-house-widget-img');
+  function fmtW(v) { if (v == null || isNaN(v)) return '–'; var w = Number(v); return w >= 1000 ? (w/1000).toFixed(2) + ' kW' : Math.round(w) + ' W'; }
+  function render(data) {
+    if (!container.isConnected) return;
+    var genW = (data.generation && data.generation.totalW != null) ? Number(data.generation.totalW) : 0;
+    var gridConsW = (data.grid && data.grid.consumptionW != null) ? Number(data.grid.consumptionW) : 0;
+    var gridFeedW = (data.grid && data.grid.feedInW != null) ? Number(data.grid.feedInW) : 0;
+    var consumptionW = (data.consumption && data.consumption.totalW != null) ? Number(data.consumption.totalW) : 0;
+    var wallboxW = (data.consumption && data.consumption.wallboxW != null) ? Number(data.consumption.wallboxW) : 0;
+    var heatPumpW = (data.consumption && data.consumption.heatPumpW != null) ? Number(data.consumption.heatPumpW) : 0;
+    var useHeatPumpImage = !!(data.widgetOptions && data.widgetOptions.useHeatPumpImage) || (data.consumption && data.consumption.heatPumpW != null);
+    var wallboxEnabled = !!(data.widgetOptions && data.widgetOptions.wallboxEnabled) || (data.consumption && data.consumption.wallboxW != null);
+    var totalChargeW = (data.batteries && data.batteries.totalChargeW != null) ? Number(data.batteries.totalChargeW) : 0;
+    var totalDischargeW = (data.batteries && data.batteries.totalDischargeW != null) ? Number(data.batteries.totalDischargeW) : 0;
+    var batItems = (data.batteries && data.batteries.items) ? data.batteries.items : {};
+    var firstSoc = null;
+    try { firstSoc = Object.values(batItems)[0].soc; } catch(e) {}
+    var socStr = firstSoc != null ? Math.round(firstSoc) + '%' : '–';
+    var batStatus = totalChargeW > 0 ? 'lädt' : (totalDischargeW > 0 ? 'entlädt' : 'wartet');
+    function dirClass(k) {
+      if (k === 'pv') return 'scc-house-line--dir-fwd';
+      if (k === 'house') return 'scc-house-line--dir-fwd';
+      if (k === 'battery') return (totalDischargeW > 0 && totalChargeW <= 0) ? 'scc-house-line--dir-rev' : 'scc-house-line--dir-fwd';
+      if (k === 'grid') return (gridFeedW > 0) ? 'scc-house-line--dir-fwd' : 'scc-house-line--dir-rev';
+      if (k === 'wallbox' || k === 'heatpump') return 'scc-house-line--dir-fwd';
+      return 'scc-house-line--dir-fwd';
+    }
+    function flowColorClass(t) {
+      if (t === 'pv' || t === 'battery') return 'scc-house-line--green';
+      if (t === 'grid') return (gridFeedW > 0) ? 'scc-house-line--green' : 'scc-house-line--red';
+      if (t === 'house') { if (gridConsW > 0 && genW > 0) return 'scc-house-line--mixed'; if (gridConsW > 0) return 'scc-house-line--red'; return 'scc-house-line--green'; }
+      if (t === 'wallbox' || t === 'heatpump') { if (gridConsW > 0 && genW > 0) return 'scc-house-line--mixed'; if (gridConsW > 0) return 'scc-house-line--red'; return 'scc-house-line--green'; }
+      return 'scc-house-line--green';
+    }
+    function lineCls(active, t) {
+      var c = 'scc-house-line scc-house-line--' + t + ' ' + dirClass(t) + ' ' + flowColorClass(t);
+      if (active) c += ' scc-house-line--active';
+      return c;
+    }
+    function baseCls(t) { return 'scc-house-line-base scc-house-line-base--' + t; }
+    function valueColorClass(t) {
+      if (t === 'pv') return (genW > 0) ? 'scc-house-value--green' : 'scc-house-value--muted';
+      if (t === 'house') { if (consumptionW <= 0) return 'scc-house-value--muted'; if (gridConsW > 0 && genW > 0) return 'scc-house-value--mixed'; if (gridConsW > 0) return 'scc-house-value--red'; return 'scc-house-value--green'; }
+      if (t === 'battery') { if (totalChargeW > 0) return 'scc-house-value--green'; if (totalDischargeW > 0) return 'scc-house-value--red'; return 'scc-house-value--muted'; }
+      if (t === 'grid') { if (gridFeedW > 0) return 'scc-house-value--green'; if (gridConsW > 0) return 'scc-house-value--red'; return 'scc-house-value--muted'; }
+      return 'scc-house-value--muted';
+    }
+    var gridActive = gridConsW > 0 || gridFeedW > 0;
+    if (imgEl) {
+      var base = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname.replace(/\/[^/]*$/, '') || '.' : '.';
+      imgEl.src = base + (useHeatPumpImage ? '/house_heatpump2.png' : '/house.png');
+      imgEl.style.display = '';
+    }
+    var r = container.__sccRefs;
+    if (!r) {
+      container.__sccRefs = r = {
+        basePv: container.querySelector('[data-scc="base-pv"]'),
+        baseHouse: container.querySelector('[data-scc="base-house"]'),
+        baseGrid: container.querySelector('[data-scc="base-grid"]'),
+        baseGridFrom: container.querySelector('[data-scc="base-grid-from"]'),
+        baseGridEnd: container.querySelector('[data-scc="base-grid-end"]'),
+        baseBattery: container.querySelector('[data-scc="base-battery"]'),
+        baseWallbox: container.querySelector('[data-scc="base-wallbox"]'),
+        baseHeatpump: container.querySelector('[data-scc="base-heatpump"]'),
+        flowPv: container.querySelector('[data-scc="flow-pv"]'),
+        flowHouse: container.querySelector('[data-scc="flow-house"]'),
+        flowGrid: container.querySelector('[data-scc="flow-grid"]'),
+        flowGridFrom: container.querySelector('[data-scc="flow-grid-from"]'),
+        flowGridEnd: container.querySelector('[data-scc="flow-grid-end"]'),
+        flowBattery: container.querySelector('[data-scc="flow-battery"]'),
+        flowWallbox: container.querySelector('[data-scc="flow-wallbox"]'),
+        flowHeatpump: container.querySelector('[data-scc="flow-heatpump"]'),
+        valPv: container.querySelector('[data-scc="val-pv"]'),
+        valHouse: container.querySelector('[data-scc="val-house"]'),
+        valBattery: container.querySelector('[data-scc="val-battery"]'),
+        labBattery: container.querySelector('[data-scc="lab-battery"]'),
+        valGrid: container.querySelector('[data-scc="val-grid"]'),
+        subGrid: container.querySelector('[data-scc="sub-grid"]'),
+        batSeg0: container.querySelector('[data-scc="bat-seg-0"]'),
+        batSeg1: container.querySelector('[data-scc="bat-seg-1"]'),
+        batSeg2: container.querySelector('[data-scc="bat-seg-2"]'),
+        batSeg3: container.querySelector('[data-scc="bat-seg-3"]'),
+        batSeg4: container.querySelector('[data-scc="bat-seg-4"]')
+      };
+    }
+    if (r.basePv) { r.basePv.setAttribute('d', pathPv); r.basePv.setAttribute('class', baseCls('pv')); }
+    if (r.baseHouse) { r.baseHouse.setAttribute('d', pathHaus); r.baseHouse.setAttribute('class', baseCls('house')); }
+    if (r.baseGrid) { r.baseGrid.setAttribute('d', pathNetzToDevice); r.baseGrid.setAttribute('class', baseCls('grid')); }
+    if (r.baseGridFrom) { r.baseGridFrom.setAttribute('d', pathNetzFromDevice); r.baseGridFrom.setAttribute('class', baseCls('grid')); }
+    if (r.baseGridEnd) { r.baseGridEnd.setAttribute('d', pathNetzEnd); r.baseGridEnd.setAttribute('class', baseCls('grid') + ' scc-house-line-base--grid-end'); }
+    if (r.baseBattery) { r.baseBattery.setAttribute('d', pathBatterie); r.baseBattery.setAttribute('class', baseCls('battery')); }
+    if (r.baseWallbox) { if (wallboxEnabled) { r.baseWallbox.setAttribute('d', pathWallbox); r.baseWallbox.setAttribute('class', baseCls('wallbox')); r.baseWallbox.removeAttribute('style'); } else { r.baseWallbox.setAttribute('style', 'display:none'); } }
+    if (r.baseHeatpump) { if (useHeatPumpImage) { r.baseHeatpump.setAttribute('d', pathHeatPump); r.baseHeatpump.setAttribute('class', baseCls('heatpump')); r.baseHeatpump.removeAttribute('style'); } else { r.baseHeatpump.setAttribute('style', 'display:none'); } }
+    if (r.flowPv) { r.flowPv.setAttribute('d', pathPvFlow); r.flowPv.setAttribute('class', lineCls(genW > 0, 'pv')); }
+    if (r.flowHouse) { r.flowHouse.setAttribute('d', pathHaus); r.flowHouse.setAttribute('class', lineCls(consumptionW > 0, 'house')); }
+    if (r.flowGrid) { r.flowGrid.setAttribute('d', pathNetzToDevice); r.flowGrid.setAttribute('class', lineCls(gridActive, 'grid')); }
+    if (r.flowGridFrom) { r.flowGridFrom.setAttribute('d', pathNetzFromDevice); r.flowGridFrom.setAttribute('class', lineCls(gridActive, 'grid')); }
+    if (r.flowGridEnd) { r.flowGridEnd.setAttribute('d', pathNetzEnd); r.flowGridEnd.setAttribute('class', lineCls(gridActive, 'grid') + ' scc-house-line--grid-end'); }
+    if (r.flowBattery) { r.flowBattery.setAttribute('d', pathBatterie); r.flowBattery.setAttribute('class', lineCls(totalChargeW > 0 || totalDischargeW > 0, 'battery')); }
+    if (r.flowWallbox) { if (wallboxEnabled) { r.flowWallbox.setAttribute('d', pathWallbox); r.flowWallbox.setAttribute('class', lineCls(wallboxW > 0, 'wallbox') + ' scc-house-line--dashed'); r.flowWallbox.removeAttribute('style'); } else { r.flowWallbox.setAttribute('style', 'display:none'); } }
+    if (r.flowHeatpump) { if (useHeatPumpImage) { r.flowHeatpump.setAttribute('d', pathHeatPump); r.flowHeatpump.setAttribute('class', lineCls(heatPumpW > 0, 'heatpump') + ' scc-house-line--dashed'); r.flowHeatpump.removeAttribute('style'); } else { r.flowHeatpump.setAttribute('style', 'display:none'); } }
+    if (r.valPv) { r.valPv.textContent = fmtW(genW); r.valPv.setAttribute('class', 'scc-house-value ' + valueColorClass('pv')); }
+    if (r.valHouse) { r.valHouse.textContent = fmtW(consumptionW); r.valHouse.setAttribute('class', 'scc-house-value ' + valueColorClass('house')); }
+    if (r.valBattery) { r.valBattery.textContent = fmtW(totalChargeW > 0 ? totalChargeW : totalDischargeW); r.valBattery.setAttribute('class', 'scc-house-value ' + valueColorClass('battery')); }
+    if (r.labBattery) { r.labBattery.textContent = 'Batterie ' + socStr + ' ' + batStatus; r.labBattery.setAttribute('class', 'scc-house-label ' + valueColorClass('battery')); }
+    if (r.valGrid) { r.valGrid.textContent = (gridConsW > 0 ? fmtW(gridConsW) : gridFeedW > 0 ? fmtW(gridFeedW) : '–'); r.valGrid.setAttribute('class', 'scc-house-value ' + valueColorClass('grid')); }
+    if (r.subGrid) { r.subGrid.textContent = (gridConsW > 0 ? 'Bezug' : gridFeedW > 0 ? 'Einspeisung' : ''); r.subGrid.setAttribute('class', 'scc-house-sublabel ' + valueColorClass('grid')); }
+    var socPercent = firstSoc != null ? Math.min(100, Math.max(0, Number(firstSoc))) : 0;
+    var isCharging = totalChargeW > 0;
+    var isDischarging = totalDischargeW > 0;
+    var segFill = isCharging ? '#00c853' : (isDischarging ? '#c62828' : 'rgba(255,255,255,0.25)');
+    var segEmpty = 'rgba(255,255,255,0.08)';
+    var lastFilledIdx = Math.max(-1, Math.min(4, Math.floor(socPercent / 20) - 1));
+    [r.batSeg0, r.batSeg1, r.batSeg2, r.batSeg3, r.batSeg4].forEach(function(el, i) {
+      if (!el) return;
+      var threshold = (i + 1) * 20;
+      var filled = socPercent >= threshold;
+      el.setAttribute('fill', filled ? segFill : segEmpty);
+      el.classList.remove('scc-battery-seg--fill', 'scc-battery-seg--charging');
+      if (filled) { el.classList.add('scc-battery-seg--fill'); if ((isCharging || isDischarging) && i === lastFilledIdx) el.classList.add('scc-battery-seg--charging'); }
+    });
+  }
+  function update(val) {
+    if (arguments.length >= 2 && arguments[1] && arguments[1].val !== undefined) val = arguments[1].val;
+    var d = null;
+    if (val != null) d = typeof val === 'string' ? (function(){ try { return JSON.parse(val); } catch(e){ return null; } })() : val;
+    if (d && d.surplus) render(d); else if (container.__sccRefs) render({ surplus: {}, generation: {}, grid: {}, batteries: {}, consumption: {} });
+  }
+  function load() {
+    try {
+      if (typeof getState === 'function') {
+        getState(oid, function(err, state) { if (!err && state && state.val != null) update(state.val); });
+      } else if (typeof socket !== 'undefined' && socket && socket.emit) {
+        socket.emit('getState', oid, function(err, state) { if (!err && state && state.val != null) update(state.val); });
+      }
+    } catch(e) {}
+  }
+  load();
+  setInterval(load, 2000);
+  try { if (typeof subscribe === 'function') subscribe(oid, update); } catch(e) {}
+})();
+</script>

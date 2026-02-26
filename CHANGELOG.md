@@ -10,6 +10,32 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Added / Hinzugefügt
+
+- **EN:** **VIS 2 widget** `sccHouseFlow`: House flow diagram (PV, battery, grid, load) as React/TypeScript widget; built with Vite from `vis2-widgets/`, output in `widgets/scc/` (customWidgets.js, assets). io-package.json `visWidgets` and root script `npm run build:widgets` (install + Vite build + copy).  
+  **DE:** **VIS-2-Widget** `sccHouseFlow`: Haus-Fluss-Diagramm als React/TypeScript-Widget; Build mit Vite aus `vis2-widgets/`, Ausgabe in `widgets/scc/`. io-package.json `visWidgets` und Skript `npm run build:widgets`.
+
+---
+
+## [0.3.6] – 2026-02-25
+
+### Added / Hinzugefügt
+
+- **EN:** **Adapter options** for **Wallbox** and **Wärmepumpe** (heat pump): optional state IDs for power (W); when enabled, the Flow diagram shows the corresponding connection lines and the values appear in the sources table (Quellen).  
+  **DE:** **Adapter-Optionen** für **Wallbox** und **Wärmepumpe**: optionale State-IDs für die Leistung (W); bei Aktivierung zeigt das Fluss-Diagramm die zugehörigen Anschlusslinien und die Werte erscheinen in der Quellen-Tabelle.
+- **EN:** **Flow diagram:** House image switches to the variant **with heat pump** (Wärmepumpe) when the heat pump option is enabled in the adapter config; otherwise the standard house image is used.  
+  **DE:** **Fluss-Diagramm:** Das Hausbild wechselt auf die Variante **mit Wärmepumpe**, wenn die Option Wärmepumpe in der Adapter-Konfiguration aktiv ist; sonst wird das Standard-Hausbild verwendet.
+- **EN:** **Sources table (Quellen):** Wallbox and Wärmepumpe are shown in the „Quellen“ list with their current power (W/kW) when they are configured in the adapter.  
+  **DE:** **Quellen-Tabelle:** Wallbox und Wärmepumpe erscheinen in der Liste „Quellen“ mit aktueller Leistung (W/kW), wenn sie in der Adapter-Konfiguration aktiviert sind.
+
+### Changed / Geändert
+
+- **EN:** **Flow diagram lines:** Removed separate tail (Schweif) paths and tail CSS/keyframes. Stroke is again set via CSS only (uniform animated dashes with glow); comet/meteor gradient on stroke was reverted because it did not render correctly on curved paths.  
+  **DE:** **Fluss-Linien:** Separate Schweif-Pfade und Tail-CSS/Keyframes entfernt. Stroke wieder nur per CSS (einheitliche animierte Striche mit Glow); Kometen-Gradient auf dem Stroke wurde zurückgenommen (Darstellung auf gekrümmten Pfaden fehlerhaft).
+
+---
+
+
 ## [0.3.5] – 2026-02-22
 
 ### Added / Hinzugefügt

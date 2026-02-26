@@ -1,0 +1,1 @@
+const _="__mf_init____mf__virtual/sccHouseFlow__mf_v__runtimeInit__mf_v__.js__";if(!globalThis[_]){let i,s;const e=new Promise((o,t)=>{i=o,s=t});globalThis[_]={initPromise:e,initResolve:i,initReject:s}}var l=globalThis[_];export{l as s};
